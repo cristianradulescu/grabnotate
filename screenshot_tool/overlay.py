@@ -104,8 +104,8 @@ class SelectionOverlay(Gtk.Window):
         if self._default_selection_set or width < 10 or height < 10:
             return
         self._default_selection_set = True
-        margin_x = width * 0.25
-        margin_y = height * 0.25
+        margin_x = width * 0.40
+        margin_y = height * 0.40
         self._sel_x  = margin_x
         self._sel_y  = margin_y
         self._sel_x2 = width  - margin_x
