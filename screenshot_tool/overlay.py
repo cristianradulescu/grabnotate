@@ -380,13 +380,21 @@ class SelectionOverlay(Gtk.Window):
         if not self._has_selection:
             return True
 
-        step = self._NUDGE_LARGE if shift else self._NUDGE_SMALL
+        # Determine intent from modifier keys (arrows) or keyval case (hjkl)
+        is_upper_hjkl = keyval in (Gdk.KEY_H, Gdk.KEY_J, Gdk.KEY_K, Gdk.KEY_L)
+        is_ctrl_hjkl  = keyval in (0x08, 0x0a, 0x0b, 0x0c)
 
-        if ctrl:
+        do_shift = shift or is_upper_hjkl
+        do_ctrl  = ctrl  or is_ctrl_hjkl
+
+        # Shift (or Shift+Ctrl) → large step; plain Ctrl or no modifier → small step
+        step = self._NUDGE_LARGE if do_shift else self._NUDGE_SMALL
+
+        if do_ctrl:
             # Move top-left corner only (resize from the start)
             self._sel_x  = self._clamp_x(self._sel_x  + dx * step)
             self._sel_y  = self._clamp_y(self._sel_y  + dy * step)
-        elif shift:
+        elif do_shift:
             # Move bottom-right corner only (resize from the end)
             self._sel_x2 = self._clamp_x(self._sel_x2 + dx * step)
             self._sel_y2 = self._clamp_y(self._sel_y2 + dy * step)
@@ -420,10 +428,21 @@ class SelectionOverlay(Gtk.Window):
             Gdk.KEY_Right: ( 1,  0),
             Gdk.KEY_Up:    ( 0, -1),
             Gdk.KEY_Down:  ( 0,  1),
+            # lowercase
             Gdk.KEY_h:     (-1,  0),
             Gdk.KEY_l:     ( 1,  0),
             Gdk.KEY_k:     ( 0, -1),
             Gdk.KEY_j:     ( 0,  1),
+            # uppercase (Shift+hjkl)
+            Gdk.KEY_H:     (-1,  0),
+            Gdk.KEY_L:     ( 1,  0),
+            Gdk.KEY_K:     ( 0, -1),
+            Gdk.KEY_J:     ( 0,  1),
+            # Ctrl+hjkl produces ASCII control codes
+            0x08:          (-1,  0),  # Ctrl+h (BS)
+            0x0c:          ( 1,  0),  # Ctrl+l (FF)
+            0x0b:          ( 0, -1),  # Ctrl+k (VT)
+            0x0a:          ( 0,  1),  # Ctrl+j (LF)
         }.get(keyval, (0, 0))
 
     def _clamp_x(self, v: float) -> float:

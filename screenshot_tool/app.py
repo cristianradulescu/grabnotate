@@ -139,9 +139,20 @@ class MainWindow(Adw.ApplicationWindow):
         shortcuts_action.connect("activate", self._on_shortcuts_clicked)
         self.add_action(shortcuts_action)
 
+        # Close window with Escape
+        key = Gtk.EventControllerKey()
+        key.connect("key-pressed", self._on_key_pressed)
+        self.add_controller(key)
+
     # ------------------------------------------------------------------
     # Step 1: hide window, request full-screen capture via portal
     # ------------------------------------------------------------------
+
+    def _on_key_pressed(self, _ctrl, keyval, _keycode, _state):
+        if keyval == Gdk.KEY_Escape:
+            self.close()
+            return True
+        return False
 
     def start_capture(self):
         """Begin a capture (callable directly, without a button event)."""
